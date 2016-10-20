@@ -1,0 +1,39 @@
+# rs-ws-02-2
+# MOC - Data Analysis (T. Nauss, C. Reudenbach)
+# Clip aerial images to LAS extent.
+
+# Set path ---------------------------------------------------------------------
+if(Sys.info()["sysname"] == "Windows"){
+  filepath_base <- "D:/active/moc/msc-phygeo-remote-sensing-2016/"
+} else {
+  filepath_base <- "/media/TOSHIBA\ EXT//GFO/BushEncroachment/"
+}
+
+path_data <- paste0(filepath_base, "data/")
+path_aerial <- paste0(path_data, "aerial/")
+path_aerial_merged <- paste0(path_data, "aerial_merged/")
+path_aerial_croped <- paste0(path_data, "aerial_croped/")
+path_lidar_raster <- paste0(path_data, "lidar_rasters/")
+path_temp <- paste0(filepath_base, "temp/")
+
+
+# Libraries --------------------------------------------------------------------
+library(raster)
+
+rasterOptions(tmpdir = path_temp)
+
+
+# Clip eastern aerial files to LAS extent and write raster to separate file ----
+aerial_files <- list.files(path_aerial, full.names = TRUE, 
+                           pattern = glob2rx("478*.tif"))
+las_extent <- extent(raster(paste0(path_lidar_raster, "dtm_idw.tif")))
+
+for(name in aerial_files){
+  crp <- crop(stack(name), las_extent, snap = "near")
+  dir.create(path_aerial_croped, showWarnings = FALSE)
+  writeRaster(crp, filename = 
+                paste0(paste0(path_aerial_croped, basename(name))))
+  
+  # Rename original files to mark them
+  file.rename(name, paste0(name, ".deprc"))
+}
