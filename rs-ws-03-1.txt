@@ -1,0 +1,44 @@
+====== W01-2: LiDAR derived information as raster data ======
+This worksheet tackles the problem of the white borders within some aerial images.
+
+After completing this worksheet you should know how to subset LiDAR point clouds and select problem guided rules for the transformation into raster datasets.
+
+===== Things you need for this worksheet =====
+  * {{section>resources:templates:tools#ArcGIS &inline}}
+  * your datasets from [[courses:msc:msc-phygeo-remote-sensing:worksheets:rs-ws-01-1|W01-1: LiDAR - LAS I/O]]
+
+===== Examples of preparing LiDAR data for subsequent GIS analysis =====
+The following tasks will be used as examples of potentially useful LiDAR information. While we will not come back to these datasets within this module, it will be analyzed as part of the [[courses:msc:msc-phygeo-gis:description|Advanced GIS]] and the upcoming in-depth modules on environmental information systems.
+
+Given all the software and hardware constraints when dealing with LiDAR datasets (see [[courses:msc:msc-phygeo-remote-sensing:worksheets:rs-ws-01-1|W01-1: LiDAR - LAS I/O]], we will restrict today's work to a minimum.
+
+===== Learning log assignments =====
+{{section>resources:templates:template_learning_log#Weekly assignments}}
+
+If this is the first time that you use your Git repository provided by LogMOC, the learning log space of Marburg Open Courseware on GitHub, you have to get yourself a GitHub account and use the link provided by the course lecturers afterwards in order to create your personal repository.
+
+:-\ If not done yet, please create your personal learning log repository using the link provided by the course lecturers and clone it to your local computer.
+
+Once you have your repository cloned to your local computer, create the following two folders inside the repository: ''remote-sensing/rs-ws-01-1''. Please note that ''rs-ws-01-1'' is a sub-folder of ''remote_sensing'' which in turn is a sub-folder of your main repository folder (i.e. ''msc-phygeo-class-of-2016-<your github name>''). Do not use any spaces within your folder or filenames. Never.
+
+:-\ Please create the folder structure described above.
+
+In the following we will transform 3D LiDAR point clouds to 2D raster surfaces. This also comprises the determination of a fixed spatial resolution as well as a mathematical function which controls the spatial transformation.
+
+:-\ Define a common resolution applicable to all of the following datasets and compute the respective raster data layers for the entire Marburg university forest study region.
+  * Digital terrain model, i.e. LiDAR-based height a.s.l. for all ground returns
+  * Digital surface model, i.e. LiDAR-based height a.s.l. for all surface (i.e. non-ground) returns
+  * LiDAR-based intensity mean within each raster cell
+  * LiDAR-based intensity range within each raster cell
+  * Maximum number of LiDAR returns within each raster cell
+  * LiDAR-based height range within each raster cell
+  * Number of LiDAR returns (counts) within each raster cell originating from the ground surface
+  * Number of LiDAR returns (counts) within each raster cell originating from above ground layers (i.e not ground)
+
+
+:-\ Create a Rmd file with html output in your GitHub classroom repository and include the name of the dataset you have created followed by a screen shot of the raster dataset (e.g. showing it as layer in ArcGIS). Knitr your Rmd file, update (i.e. commit) it in your local repository and publish (i.e. push) it to the GitHub classroom. Make sure that the created html file is also part of your git repository.
+
+
+<note important>Create a Rmd file for html output and use ''rs-ws-01-1'' (i.e. the worksheet shortname) also for the title and the filename. Store it in the ''rs-ws-01-1'' folder just created. You can commit/push as many versions as you like during your work but once you have reached your final version, please use "Final version" as comment for the commit.
+
+Please also make sure that the //knitred// html file is actually put into version control, i.e. it has to show up not only in your local repository folder but also on your GitHub master branch. If it won't show up on GitHub, it is likely that ''.html'' is part of a ''.gitignore'' file in your repository. For a quick'n'dirty solution, just delete that file if it shows up until you are more familiar with Git.</note>

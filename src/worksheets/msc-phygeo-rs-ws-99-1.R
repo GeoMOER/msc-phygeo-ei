@@ -1,6 +1,6 @@
-# rs-ws-02-1
+# rs-ws-03-1
 # MOC - Data Analysis (T. Nauss, C. Reudenbach)
-# Overlay "white" aerial images
+# Merge "white" aerial images
 
 # Set path ---------------------------------------------------------------------
 if(Sys.info()["sysname"] == "Windows"){
@@ -23,10 +23,10 @@ rasterOptions(tmpdir = path_temp)
 
 # Merge aerial files and write resulting raster to separate file ----------------
 aerial_files <- list.files(path_aerial, full.names = TRUE, 
-                           pattern = glob2rx("*(1).tif"))
+                           pattern = glob2rx("*_1.tif"))
 
 for(name1 in aerial_files){
-  name2 <- paste0(substr(name1, 1, nchar(name1)-8), ".tif")
+  name2 <- paste0(substr(name1, 1, nchar(name1)-6), ".tif")
   fn <- overlay(stack(name1), stack(name2), fun = min)
   dir.create(path_aerial_merged, showWarnings = FALSE)
   writeRaster(fn, filename = 
@@ -36,3 +36,15 @@ for(name1 in aerial_files){
   file.rename(name1, paste0(name1, ".deprc"))
   file.rename(name2, paste0(name2, ".deprc"))
 }
+
+
+
+aerial_files <- list.files(path_aerial, full.names = TRUE, 
+                           pattern = glob2rx("*.tif"))
+for(i in aerial_files){
+  s <- stack(i)
+  crs(s) <- +proj=utm +zone=32 +ellps=GRS80 +units=m +no_defs 
+  
+  writeRaster(s, paste0(dirname(i), "/test/", basename(i)), format="GTiff")
+}
+

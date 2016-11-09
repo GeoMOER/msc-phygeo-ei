@@ -1,0 +1,100 @@
+# rs-ws-03-1
+# MOC - Data Analysis (T. Nauss, C. Reudenbach)
+# Check radiometric image alignment
+
+# Set path ---------------------------------------------------------------------
+if(Sys.info()["sysname"] == "Windows"){
+  filepath_base <- "D:/active/moc/msc-phygeo-remote-sensing-2016/"
+} else {
+  filepath_base <- "/media/permanent/active/moc/msc-phygeo-remote-sensing-2016/"
+}
+
+path_data <- paste0(filepath_base, "data/")
+path_aerial <- paste0(path_data, "aerial/")
+path_aerial_merged <- paste0(path_data, "aerial_merged/")
+path_aerial_croped <- paste0(path_data, "aerial_croped/")
+path_rdata <- paste0(path_data, "RData/")
+path_scripts <- paste0(filepath_base, "scripts/msc-phygeo-remote-sensing/src/functions/")
+path_temp <- paste0(filepath_base, "temp/")
+
+
+# Libraries --------------------------------------------------------------------
+library(raster)
+library(tools)
+source(paste0(path_scripts, "fun_ngb_aerials.R"))
+
+rasterOptions(tmpdir = path_temp)
+
+
+# Read aerial files from different directories and create consistent list ------
+aerial_files <- list.files(path_aerial, full.names = TRUE, 
+                           pattern = glob2rx("*0.tif"))
+aerial_files_merged <- list.files(path_aerial_merged, full.names = TRUE, 
+                                  pattern = glob2rx("*.tif"))
+aerial_files_croped <- list.files(path_aerial_croped, full.names = TRUE, 
+                                  pattern = glob2rx("*.tif"))
+
+aerial_files_group <- c(aerial_files_merged, aerial_files_croped)
+
+for(f in seq(length(aerial_files))){
+  pos <- grep(basename(aerial_files[f]), basename(aerial_files_group))
+  if(length(pos) == 0){
+    aerial_files_group[length(aerial_files_group)+1] <- aerial_files[f]
+  }
+}
+
+aerial_files <- aerial_files_group[order(basename(aerial_files_group))]
+
+
+# Extract border data of aerial files ------------------------------------------
+
+ngbs <- ngb_aerials(aerial_files)
+
+
+ngbs_values <- lapply(seq(length(ngbs)), function(i){
+  
+  act_file <- names(ngbs)[i]
+  ngb_files <- ngbs[[i]]
+  
+  act_stack <- stack(act_file)
+  
+  if(is.na(ngb_files[1])){
+    nb <- NA
+  } else {
+    nb <- data.frame(act_stack[1:2, ],
+                     stack(ngb_files[1])[9999:10000, ])
+  }
+  
+  if(is.na(ngb_files[2])){
+    eb <- NA
+  } else {
+    eb <- data.frame(act_stack[, 9999:10000],
+                     stack(ngb_files[2])[, 1:2])
+  }
+ 
+  if(is.na(ngb_files[3])){
+    sb <- NA
+  } else {
+    sb <- data.frame(act_stack[9999:10000, ],
+                     stack(ngb_files[3])[1:2, ])
+  }
+  
+  if(is.na(ngb_files[4])){
+    wb <- NA
+  } else {
+    wb <- data.frame(act_stack[, 1:2],
+                     stack(ngb_files[4])[, 9999:10000])
+  }
+  
+  act_ngb <- list(NORTH = nb,
+                  EAST = eb,
+                  SOUTH = sb,
+                  WEST = wb)
+  return(act_ngb)
+})
+
+saveRDS(ngbs_values, paste0(path_rdata, "ngbs_values.rds"))
+
+
+summary(s1s3v_div)
+hist(s1s3v)
