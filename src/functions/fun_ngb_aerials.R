@@ -19,7 +19,7 @@
 #'
 
 ngb_aerials <- function(aerial_files, step = 2000){
-  
+  require(tools)
   ngb_files <- lapply(basename(aerial_files), function(act_file){
     
     # Get names without path to compare names although path might be different
