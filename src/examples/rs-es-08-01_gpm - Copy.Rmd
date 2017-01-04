@@ -1,0 +1,144 @@
+---
+output: html_document
+---
+
+
+The following examples illustrate the preprocessing of spatial data sets using
+the sp and raster package.
+
+As always, we start with importing the packages and setting the working
+directory.
+```{r, eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+# Set path ---------------------------------------------------------------------
+if(Sys.info()["sysname"] == "Windows"){
+  filepath_base <- "D:/active/moc/msc-phygeo-remote-sensing-2016/"
+} else {
+  filepath_base <- "/media/permanent/active/moc/msc-phygeo-remote-sensing-2016/"
+}
+
+path_data <- paste0(filepath_base, "data/")
+path_aerial <- paste0(path_data, "aerial/")
+path_aerial_merged <- paste0(path_data, "aerial_merged/")
+path_aerial_croped <- paste0(path_data, "aerial_croped/")
+path_aerial_final <- paste0(path_data, "aerial_final/")
+path_aerial_aggregated <- paste0(path_data, "aerial_aggregated/")
+path_landcover_training_areas <- paste0(path_data, "landcover/training_areas/")
+path_rdata <- paste0(path_data, "RData/")
+path_scripts <- paste0(filepath_base, "scripts/msc-phygeo-remote-sensing/src/functions/")
+path_temp <- paste0(filepath_base, "temp/")
+
+funs <- list.files(path_scripts, pattern = glob2rx("fun*.R"), full.names = TRUE)
+sapply(funs, source, simplify = TRUE)
+```
+
+
+```{r, warning=FALSE, message=FALSE, results="hide"}
+library(gpm)
+library(raster)
+library(rgdal)
+library(sp)
+
+rasterOptions(tmpdir = path_temp)
+```
+
+Before we can build a model, we have to extract the raster values (i.e. independent variables) from the satellite dataset. The extraction is based on the polygon layer (ta) which holds the training areas for the prediction. Once everything has been stored in a data frame, it's time to build the gpm object.
+```{r, eval=FALSE, warning=FALSE, message=FALSE, results="hide"}
+rgb <- stack(paste0(path_aerial_aggregated, "geonode_muf_merged_001m.tif"))
+vi <- raster(paste0(path_aerial_aggregated, "muf_merged_001m_visible_vegetation_index.tif"))
+rm <- raster(paste0(path_aerial_aggregated, "geonode_muf_merged_001m_redness_index_mean_21.tif"))
+sat <- stack(rgb, vi, rm)
+
+ta <- readOGR(paste0(path_landcover_training_areas, "muf_training_final.shp"),
+              "muf_training_final")
+
+data <- extract(sat, ta)
+summary(data)
+saveRDS(data, file = paste0(path_rdata, "muf_training_combined.RDS"))
+data <- readRDS(file = paste0(path_rdata, "muf_training_combined.RDS"))
+
+data_cmb <- lapply(seq(length(data)), function(i){
+  data.frame(ID = ta@data$ID[i],
+             NAME = ta@data$NAME[i],
+             data[[i]])
+})
+data_cmb <- do.call("rbind", data_cmb)
+data_cmb <- data_cmb[complete.cases(data_cmb[, c(1,3:7)]),]
+```
+
+```{r, eval=FALSE, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
+saveRDS(data_cmb, file = paste0(path_rdata, "muf_training_combined_final.RDS"))
+```
+
+```{r, eval=FALSE, echo = FALSE}
+data_cmb <- readRDS(file = paste0(path_rdata, "muf_training_combined_final.RDS"))
+```
+
+In order to build the gpm object, some meta information has to be defined. This mainly hold information on which column number to use as response (i.e. dependent) variable and which ones to use as independent variables.
+```{r, eval=FALSE}
+data_cmb$ID <- as.factor(data_cmb$ID)
+meta <- createGPMMeta(data_cmb, 
+                      type = "input",
+                      selector = 1, response = 1, 
+                      independent = c(3:7), meta = NULL)
+muf_gpm <- gpm(data_cmb, 
+               meta, scale = TRUE)
+```
+
+Once the gpm object has been created, it can be used as input for computing
+resamples and splitting the resamples into test and training datasets afterwards. In the following example, only 50 data pairs per land-cover are extracted from the overall dataset and this reampling procedure is repeaded ten times. Afterwards, each of the resamplings is split into a training and testing dataset (each holding 50 percent of the data).
+```{r, eval=FALSE}
+muf_resamples <- resamplingsByVariable(x = muf_gpm@data$input, 
+                                       resample = 10, 
+                                       use_selector = FALSE,
+                                       selector = muf_gpm@data$input$ID,
+                                       grabs = 50)
+
+muf_trte <- splitMultResp(x = muf_gpm@data$input, 
+                           response = muf_gpm@meta$input$RESPONSE,
+                           resamples = muf_resamples,
+                           p = 0.005)
+```
+
+Once the resampling has been defined, the model tuning and feature selection is
+handeld by the ``trainModel`` function.
+```{r, eval=FALSE}
+muf_models <- trainModel(x = muf_gpm,
+                         response = muf_gpm@meta$input$RESPONSE, 
+                         independent = muf_gpm@meta$input$INDEPENDENT,
+                         resamples = muf_trte, 
+                         n_var = c(seq(length(muf_gpm@meta$input$INDEPENDENT))),
+                         mthd = "rf", 
+                         seed_nbr = 1, 
+                         cv_nbr = 2,
+                         var_selection = "indv",
+                         filepath_tmp = NULL)
+
+```
+
+```{r, eval = FALSE, echo = FALSE}
+saveRDS(muf_models, file = paste0(path_rdata, "muf_models.RDS"))
+```
+
+```{r, echo = FALSE}
+muf_models <- readRDS(file = paste0(path_rdata, "muf_models.RDS"))
+```
+
+Based on the 10 trained models (10 because 10 resamplings have been created above), the variable importance of based on each model can be computed in a scaled (i.e. rainging between 0 and 1) and unscaled manner.
+```{r}
+var_imp <- compVarImp(muf_models, scale = FALSE)
+var_imp_scale <- compVarImp(muf_models, scale = TRUE)
+
+```
+
+The statistics can further be used to create some variable importants plots. Please note that the heatmap only makes sense if more than one type of response variable has been selected (e.g. if one predicts different classes separately and not within one model).
+```{r}
+plotVarImp(var_imp)
+
+plotVarImpHeatmap(var_imp_scale, xlab = "Species", ylab = "Band")
+```
+
+Finally, the performance statistics can be computed for regression or - as in this example - classification models.
+```{r}
+tstat <- compContTests(muf_models, mean = TRUE)
+summary(tstat[[2]])
+```

@@ -2,32 +2,22 @@
 # MOC - Data Analysis (T. Nauss, C. Reudenbach)
 # Merge "white" aerial images
 
-# Set path ---------------------------------------------------------------------
+# Set environment --------------------------------------------------------------
 if(Sys.info()["sysname"] == "Windows"){
-  filepath_base <- "D:/active/moc/msc-phygeo-remote-sensing-2016/"
+  source("D:/active/moc/msc-phygeo-remote-sensing/scripts/msc-phygeo-remote-sensing/src/functions/set_environment.R")
 } else {
-  filepath_base <- "/media/TOSHIBA\ EXT//GFO/BushEncroachment/"
+  source("/media/permanent/active/moc/msc-phygeo-remote-sensing/scripts/msc-phygeo-remote-sensing/src/functions/set_environment.R")
 }
-
-path_data <- paste0(filepath_base, "data/")
-path_aerial <- paste0(path_data, "aerial/")
-path_aerial_merged <- paste0(path_data, "aerial_merged/")
-path_temp <- paste0(filepath_base, "temp/")
-
-
-# Libraries --------------------------------------------------------------------
-library(raster)
-
-rasterOptions(tmpdir = path_temp)
 
 
 # Merge aerial files and write resulting raster to separate file ----------------
 aerial_files <- list.files(path_aerial, full.names = TRUE, 
-                           pattern = glob2rx("*_1.tif"))
+                           pattern = glob2rx("*_01.tif"))
 
 for(name1 in aerial_files){
-  name2 <- paste0(substr(name1, 1, nchar(name1)-6), ".tif")
+  name2 <- paste0(substr(name1, 1, nchar(name1)-7), ".tif")
   fn <- overlay(stack(name1), stack(name2), fun = min)
+  projection(fn) <- CRS("+init=epsg:25832")
   dir.create(path_aerial_merged, showWarnings = FALSE)
   writeRaster(fn, filename = 
                 paste0(paste0(path_aerial_merged, basename(name2))))

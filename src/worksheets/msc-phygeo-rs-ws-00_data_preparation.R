@@ -10,17 +10,16 @@ if(Sys.info()["sysname"] == "Windows"){
 }
 
 # Clip eastern aerial files to LAS extent and write raster to separate file ----
-aerial_files <- list.files(path_aerial, full.names = TRUE, 
-                           pattern = glob2rx("ortho_478*.tif"))
-las_extent <- extent(raster(paste0(path_lidar_raster, "las_dtm_01m.tif")))
+aerial_files <- list.files(path_aerial_org, full.names = TRUE, 
+                           pattern = glob2rx("*.tif"))
 
-for(name in aerial_files){
-  crp <- crop(stack(name), las_extent, snap = "near")
-  projection(crp) <- CRS("+init=epsg:25832")
-  dir.create(path_aerial_croped, showWarnings = FALSE)
-  writeRaster(crp, filename = 
-                paste0(paste0(path_aerial_croped, basename(name))))
-  
-  # Rename original files to mark them
-  file.rename(name, paste0(name, ".deprc"))
+for(name in aerial_files[-1]){
+  act <- stack(name)
+  xmin <- as.numeric(substr(basename(name), 1, 6))
+  xmax <- xmin + 2000
+  ymin <- as.numeric(substr(basename(name), 8, 14))
+  ymax <- ymin + 2000
+  projection(act) <- CRS("+init=epsg:25832")
+  extent(act) <- c(xmin, xmax, ymin, ymax)
+  writeRaster(act, filename = paste0(path_aerial, "orto_", basename(name)))
 }
