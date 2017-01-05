@@ -19,11 +19,11 @@ Strategy:
 
 ```{r}
 # Executable section
-# Set path ---------------------------------------------------------------------
+# Set environment --------------------------------------------------------------
 if(Sys.info()["sysname"] == "Windows"){
-  filepath_base <- "D:/active/moc/msc-phygeo-remote-sensing-2016/"
+  source("D:/active/moc/msc-ui/scripts/msc-phygeo-ei/src/functions/set_environment.R")
 } else {
-  filepath_base <- "/media/permanent/active/moc/msc-phygeo-remote-sensing-2016/"
+  source("/media/permanent/active/moc/msc-ui/scripts/msc-phygeo-ei/src/functions/set_environment.R")
 }
 
 path_data <- paste0(filepath_base, "data/")

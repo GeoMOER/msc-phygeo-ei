@@ -17,7 +17,6 @@
 #' If one or more of these files do not exist within aerial_files, NA is 
 #' returned for that position.
 #'
-
 ngb_aerials <- function(aerial_files, step = 2000){
   require(tools)
   ngb_files <- lapply(basename(aerial_files), function(act_file){
@@ -27,14 +26,14 @@ ngb_aerials <- function(aerial_files, step = 2000){
     fnames <- basename(aerial_files)
     
     # Get x and y coordinates of actual file from filename
-    act_file_x <- as.numeric(substr(act_file, 1, 6))
-    act_file_y <- as.numeric(substr(act_file, 8, 14))
+    act_file_x <- as.numeric(substr(act_file, 7, 12))
+    act_file_y <- as.numeric(substr(act_file, 14, 20))
     
     # Set neighbours starting from north with clockwise rotation (N, E, S, W)
-    pot_ngb <- c(paste0(act_file_x, "_", act_file_y + step, ".", act_ext),
-                 paste0(act_file_x + step, "_", act_file_y, ".", act_ext),
-                 paste0(act_file_x, "_", act_file_y - step, ".", act_ext),
-                 paste0(act_file_x - step, "_", act_file_y, ".", act_ext))
+    pot_ngb <- c(paste0("ortho_", act_file_x, "_", act_file_y + step, ".", act_ext),
+                 paste0("ortho_", act_file_x + step, "_", act_file_y, ".", act_ext),
+                 paste0("ortho_", act_file_x, "_", act_file_y - step, ".", act_ext),
+                 paste0("ortho_", act_file_x - step, "_", act_file_y, ".", act_ext))
     
     # Check if neighburs exist and create vector with full filepath
     act_ngb <- sapply(pot_ngb, function(f){

@@ -4,9 +4,9 @@
 
 # Set environment --------------------------------------------------------------
 if(Sys.info()["sysname"] == "Windows"){
-  source("D:/active/moc/msc-ui/scripts/msc-phygeo-ui/src/functions/set_environment.R")
+  source("D:/active/moc/msc-ui/scripts/msc-phygeo-ei/src/functions/set_environment.R")
 } else {
-  source("/media/permanent/active/moc/msc-ui/scripts/msc-phygeo-ui/src/functions/set_environment.R")
+  source("/media/permanent/active/moc/msc-ui/scripts/msc-phygeo-ei/src/functions/set_environment.R")
 }
 
 # Clip eastern aerial files to LAS extent and write raster to separate file ----
@@ -21,5 +21,5 @@ for(name in aerial_files){
   ymax <- ymin + 2000
   projection(act) <- CRS("+init=epsg:25832")
   extent(act) <- c(xmin, xmax, ymin, ymax)
-  writeRaster(act, filename = paste0(path_aerial_geomoc, "orto_", basename(name)))
+  writeRaster(act, filename = paste0(path_aerial_geomoc, "ortho_", basename(name)))
 }
