@@ -4,9 +4,9 @@
 
 # Set environment --------------------------------------------------------------
 if(Sys.info()["sysname"] == "Windows"){
-  source("D:/active/moc/msc-phygeo-remote-sensing/scripts/msc-phygeo-remote-sensing/src/functions/set_environment.R")
+  source("D:/active/moc/msc-ui/scripts/msc-phygeo-ui/src/functions/set_environment.R")
 } else {
-  source("/media/permanent/active/moc/msc-phygeo-remote-sensing/scripts/msc-phygeo-remote-sensing/src/functions/set_environment.R")
+  source("/media/permanent/active/moc/msc-ui/scripts/msc-phygeo-ui/src/functions/set_environment.R")
 }
 
 # Clip eastern aerial files to LAS extent and write raster to separate file ----

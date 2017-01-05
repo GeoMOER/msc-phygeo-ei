@@ -38,7 +38,7 @@ library(sp)
 
 
 # Functions --------------------------------------------------------------------
-path_functions <- "D:/active/moc/msc-phygeo-remote-sensing/scripts/msc-phygeo-remote-sensing/src/functions/"
+path_functions <- paste0(filepath_base, "scripts/msc-phygeo-/src/functions/"
 
 
 # Other settings ---------------------------------------------------------------
