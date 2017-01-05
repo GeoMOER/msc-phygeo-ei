@@ -2,29 +2,12 @@
 # MOC - Data Analysis (T. Nauss, C. Reudenbach)
 # Check radiometric image alignment
 
-# Set path ---------------------------------------------------------------------
+# Set environment --------------------------------------------------------------
 if(Sys.info()["sysname"] == "Windows"){
-  filepath_base <- "D:/active/moc/msc-phygeo-remote-sensing-2016/"
+  source("D:/active/moc/msc-phygeo-remote-sensing/scripts/msc-phygeo-remote-sensing/src/functions/set_environment.R")
 } else {
-  filepath_base <- "/media/permanent/active/moc/msc-phygeo-remote-sensing-2016/"
+  source("/media/permanent/active/moc/msc-phygeo-remote-sensing/scripts/msc-phygeo-remote-sensing/src/functions/set_environment.R")
 }
-
-path_data <- paste0(filepath_base, "data/")
-path_aerial <- paste0(path_data, "aerial/")
-path_aerial_merged <- paste0(path_data, "aerial_merged/")
-path_aerial_croped <- paste0(path_data, "aerial_croped/")
-path_rdata <- paste0(path_data, "RData/")
-path_scripts <- paste0(filepath_base, "scripts/msc-phygeo-remote-sensing/src/functions/")
-path_temp <- paste0(filepath_base, "temp/")
-
-
-# Libraries --------------------------------------------------------------------
-library(raster)
-library(tools)
-source(paste0(path_scripts, "fun_ngb_aerials.R"))
-
-rasterOptions(tmpdir = path_temp)
-
 
 # Read aerial files from different directories and create consistent list ------
 aerial_files <- list.files(path_aerial, full.names = TRUE, 
@@ -47,7 +30,6 @@ aerial_files <- aerial_files_group[order(basename(aerial_files_group))]
 
 
 # Extract border data of aerial files ------------------------------------------
-
 ngbs <- ngb_aerials(aerial_files)
 
 
