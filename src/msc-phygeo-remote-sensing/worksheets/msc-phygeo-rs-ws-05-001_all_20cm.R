@@ -35,19 +35,22 @@ pca <- stack(paste0(path_aerial_merged, "ortho_muf_", c("PC1", "PC2", "PC3"), ".
 
 
 # Compute local statistics -----------------------------------------------------
-rad <- c(25, 50, 75)
+rad <- c(25, 50)
+rad <- c(2, 4, 10)
 
-muf_all <- stack(idx, pca)
+muf_files <- c(paste0(path_aerial_merged, "ortho_muf_", c("GLI", "NGRDI", "TGI", "VVI"), ".tif"),
+               paste0(path_aerial_merged, "ortho_muf_", c("PC1", "PC2", "PC3"), ".tif"))
+muf_files <- paste0(path_aerial_merged, "ortho_muf.tif")
 
-for(n in names(muf_all)){
+for(n in muf_files){
   for(r in rad){
     print(paste0("Processing ", n, " ", r))
-    otb_local_statistics <- otbLocalStat(x = muf_all[[n]], 
-                                         radius = 3,
-                                         path_output = path_temp)
-    projection(otb_local_statistics) <- CRS("+init=epsg:25832")
-    writeRaster(otb_local_statistics, 
-                paste0(path_aerial_merged, n, "_r", r, ".tif"))
+    otb_local_statistics <- otbLocalStat(x = n, 
+                                         output_name = tools::file_path_sans_ext(basename(n)),
+                                         path_output = path_aerial_merged,
+                                         channel = seq(3),
+                                         radius = r,
+                                         return_raster = FALSE)
   }
 }
 

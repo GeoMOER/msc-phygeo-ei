@@ -8,11 +8,11 @@ if(Sys.info()["sysname"] == "Windows"){
 path_data <- paste0(filepath_base, "data/")
 
 path_aerial <- paste0(path_data, "aerial/")
-path_aerial_preprocessed <- paste0(path_aerial, "preprocessed/")
 path_aerial_croped <- paste0(path_aerial, "croped/")
 path_aerial_geomoc <- paste0(path_aerial, "geomoc/")
 path_aerial_merged <- paste0(path_aerial, "merged/")
 path_aerial_org <- paste0(path_aerial, "org/")
+path_aerial_preprocessed <- paste0(path_aerial, "preprocessed/")
 
 path_hessenforst <- paste0(path_data, "hessenforst/")
 
@@ -22,6 +22,8 @@ path_lidar <- paste0(path_data, "lidar/")
 path_lidar_rasters <- paste0(path_lidar, "rasters/")
 
 path_rdata <-paste0(path_data, "rdata/") 
+
+path_muf_set1m <- paste0(path_data, "muf_set_1m/")
 
 path_temp <- paste0(path_data, "temp/")
 
