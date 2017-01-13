@@ -2,45 +2,27 @@
 # MOC - Data Analysis (T. Nauss, C. Reudenbach)
 # Remove nas
 
-# Set path ---------------------------------------------------------------------
+# Set environment --------------------------------------------------------------
 if(Sys.info()["sysname"] == "Windows"){
-  filepath_base <- "D:/active/moc/msc-phygeo-remote-sensing-2016/"
+  source("D:/active/moc/msc-ui/scripts/msc-phygeo-ei/src/functions/set_environment.R")
 } else {
-  filepath_base <- "/media/permanent/active/moc/msc-phygeo-remote-sensing-2016/"
+  source("/media/permanent/active/moc/msc-ui/scripts/msc-phygeo-ei/src/functions/set_environment.R")
 }
 
-path_data <- paste0(filepath_base, "data/")
-path_aerial <- paste0(path_data, "aerial/")
-path_aerial_merged <- paste0(path_data, "aerial_merged/")
-path_aerial_croped <- paste0(path_data, "aerial_croped/")
-path_aerial_final <- paste0(path_data, "aerial_final/")
-path_aerial_aggregated <- paste0(path_data, "aerial_aggregated/")
-path_landcover_training_areas <- paste0(path_data, "landcover/training_areas/")
-path_rdata <- paste0(path_data, "RData/")
-path_scripts <- paste0(filepath_base, "scripts/msc-phygeo-remote-sensing/src/functions/")
-path_temp <- paste0(filepath_base, "temp/")
+test_files <- list.files(path_muf_set1m_sample_test_01, pattern = glob2rx("*.tif"),
+                         full.names = TRUE)
 
-funs <- list.files(path_scripts, pattern = glob2rx("fun*.R"), full.names = TRUE)
-sapply(funs, source, simplify = TRUE)
+act_file <- test_files[[5]]
 
-
-# Load libraries ---------------------------------------------------------------
-library(car)
-library(raster)
-library(rgdal)
-library(sp)
-
-rasterOptions(tmpdir = path_temp)
-
-
-r <- raster(paste0(path_aerial_aggregated, "geonode_muf_merged_001m_redness_index_mean_21.tif"))
+r <- raster(act_file)
 d <- getValues(r)
 summary(d)
 d[is.na(d)] <- 0
 r <- setValues(r, d)
 projection(r) <- CRS("+init=epsg:25832")
-writeRaster(r, paste0(path_aerial_aggregated, 
-                      "geonode_muf_merged_001m_redness_index_mean_21_nona.tif"),
+writeRaster(r, paste0(dirname(act_file), "/",
+                      substr(basename(act_file), 1, nchar(basename(act_file))-4),
+                      "_non-na.tif"), 
             overwrite = TRUE)
 
 # dmin <- min(d, na.rm = TRUE)

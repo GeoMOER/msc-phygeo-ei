@@ -23,3 +23,4 @@ for(name in aerial_files){
   extent(act) <- c(xmin, xmax, ymin, ymax)
   writeRaster(act, filename = paste0(path_aerial_geomoc, "ortho_", basename(name)))
 }
+
