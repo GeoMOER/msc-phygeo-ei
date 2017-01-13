@@ -10,7 +10,7 @@ if(Sys.info()["sysname"] == "Windows"){
 }
 
 
-# Compute filters --------------------------------------------------------------
+# Compute glcm filters ---------------------------------------------------------
 filenames <- c(list.files(path_muf_set1m_sample_non_segm, pattern = glob2rx("*rgb_idx*.tif"), 
                           full.names = TRUE), 
                list.files(path_muf_set1m_sample_non_segm, pattern = glob2rx("*I.tif"), 
@@ -33,4 +33,3 @@ for(name in filenames){
                 bylayer = TRUE)
   }
 }
-
