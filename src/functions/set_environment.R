@@ -29,6 +29,7 @@ path_rdata <-paste0(path_data, "rdata/")
 path_muf_set1m <- paste0(path_data, "muf_set_1m/")
 path_muf_set1m_sample_non_segm <- paste0(path_muf_set1m, "sample_non_segm/")
 path_muf_set1m_sample_segm <- paste0(path_muf_set1m, "sample_segm/")
+path_muf_set1m_sample_segm_rgb_idx <- paste0(path_muf_set1m, "sample_segm_rgb_idx/")
 path_muf_set1m_sample_test_01 <- paste0(path_muf_set1m, "sample_test_01/")
 
 path_muf_set_1m_lcc <- paste0(path_data, "muf_set_1m_lcc/")

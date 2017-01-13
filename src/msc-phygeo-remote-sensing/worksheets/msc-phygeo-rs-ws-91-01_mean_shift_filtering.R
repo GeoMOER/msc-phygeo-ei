@@ -11,9 +11,8 @@ if(Sys.info()["sysname"] == "Windows"){
 
 
 # Mean shift filtering ---------------------------------------------------------
+# Scaled pca
 muf <- paste0(path_muf_set1m, "ortho_muf_rgb_idx_pca_scaled.tif")
-# muf <- paste0(path_muf_set_1m_lcc, "ortho_muf_rgb_idx_pca_test.tif")
-
 spatialr_set = c(5, 10)
 range_set = c(15, 30)
 
