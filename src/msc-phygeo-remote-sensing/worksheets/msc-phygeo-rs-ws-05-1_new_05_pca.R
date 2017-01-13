@@ -17,38 +17,14 @@ files_muf_rgb_idx <- list.files(path_muf_set1m, pattern = glob2rx("*I.tif"),
                            full.names = TRUE)
 files_muf_rgb_idx <- c(files_muf_rgb, files_muf_rgb_idx)
 
-# files_muf_aerial_all <- list.files(path_muf_set1m, pattern = glob2rx("ortho*.tif"),
-#                                    full.names = TRUE)
-# 
-# files_muf_aerial_lidar <- c(paste0(path_muf_set1m, "lidar_dsr_01m.tif"),
-#                             files_muf_aerial_all)
-
-# pca_data <- pca(stack(files_muf_rgb))
-# projection(pca_data$map) <- CRS("+init=epsg:25832")
-# writeRaster(pca_data$map, 
-#             paste0(path_muf_set1m, "ortho_muf_rgb_", names(pca_data$map), ".tif"), 
-#             bylayer = TRUE)
-
 pca_data <- pca(stack(files_muf_rgb_idx))
 projection(pca_data$map) <- CRS("+init=epsg:25832")
 writeRaster(pca_data$map, 
             paste0(path_muf_set1m, "ortho_muf_rgb_idx_", names(pca_data$map), ".tif"), 
             bylayer = TRUE)
 
-# pca_data <- pca(stack(files_muf_aerial_all))
-# projection(pca_data$map) <- CRS("+init=epsg:25832")
-# writeRaster(pca_data$map, 
-#             paste0(path_muf_set1m, "ortho_muf_aerial_all_", names(pca_data$map), ".tif"), 
-#             bylayer = TRUE)
-# 
-# pca_data <- pca(stack(files_muf_aerial_lidar))
-# projection(pca_data$map) <- CRS("+init=epsg:25832")
-# writeRaster(pca_data$map, 
-#             paste0(path_muf_set1m, "ortho_muf_aerial_lidar_", names(pca_data$map), ".tif"), 
-#             bylayer = TRUE)
 
-
-# Scale PCA
+# Scale PCA --------------------------------------------------------------------
 new_min = 0
 new_max = 255
 

@@ -53,14 +53,3 @@ for(n in muf_files){
                                          return_raster = FALSE)
   }
 }
-
-
-
-
-# Filter   indices -----------------------------------------------------
-filter("/home/tnauss/Desktop/scripts/aerial_finalmuf_merged.tif", 
-       targetpath = dirname("/home/tnauss/Desktop/scripts/"),
-         prefix = "aerial_", window = c(21,29,33),
-         statistics = c("homogeneity", "contrast", "correlation", "mean"))
-
-

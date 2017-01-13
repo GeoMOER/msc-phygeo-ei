@@ -1,6 +1,6 @@
-# rs-ws-05-1
+# rs-ws-08-1
 # MOC - Data Analysis (T. Nauss, C. Reudenbach)
-# Compute mean shift filter
+# Mean-shift filtering
 
 # Set environment --------------------------------------------------------------
 if(Sys.info()["sysname"] == "Windows"){
@@ -11,39 +11,39 @@ if(Sys.info()["sysname"] == "Windows"){
 
 
 # Scale dataset ----------------------------------------------------------------
-rgb_ind_files <- list.files(path_muf_set1m_sample_segm_rgb_idx,
-                            full.names = TRUE, pattern = glob2rx("*.tif"))
-muf <- stack(rgb_ind_files)
-
-new_min = 0
-new_max = 255
-
-muf_scaled <- lapply(seq(nlayers(muf)), function(i){
-  mfx <- getValues(muf[[i]])
-  old_min <- min(mfx)
-  old_max <- max(mfx)
-  
-  mfx_scaled <- new_min + (new_max - new_min) * (mfx - old_min) / (old_max - old_min)  
-  mfx_scaled <- setValues(muf[[i]], mfx_scaled)
-  return(mfx_scaled)
-})
-muf_scaled <- stack(muf_scaled)
-
-writeRaster(muf_scaled, paste0(path_muf_set1m_sample_segm_rgb_idx, "ortho_muf_1m_rgb_idx_scaled.tif"))
+# rgb_ind_files <- list.files(path_muf_set1m_sample_segm,
+#                             full.names = TRUE, pattern = glob2rx("*.tif"))
+# muf <- stack(rgb_ind_files)
+# 
+# new_min = 0
+# new_max = 255
+# 
+# muf_scaled <- lapply(seq(nlayers(muf)), function(i){
+#   mfx <- getValues(muf[[i]])
+#   old_min <- min(mfx)
+#   old_max <- max(mfx)
+#   
+#   mfx_scaled <- new_min + (new_max - new_min) * (mfx - old_min) / (old_max - old_min)  
+#   mfx_scaled <- setValues(muf[[i]], mfx_scaled)
+#   return(mfx_scaled)
+# })
+# muf_scaled <- stack(muf_scaled)
+# 
+# writeRaster(muf_scaled, paste0(path_muf_set1m_sample_segm, "ortho_muf_rgb_idx_pca_scaled.tif"))
 
 
 # Mean shift filtering ---------------------------------------------------------
 spatialr_set = c(5)
-range_set = c(15)
+range_set = c(15, 30)
 
-muf <- paste0(path_muf_set1m_sample_segm_rgb_idx, "ortho_muf_1m_rgb_idx_scaled.tif")
+muf <- paste0(path_muf_set1m_sample_segm, "ortho_muf_rgb_idx_pca_scaled.tif")
 
 for(spatialr in spatialr_set){
   for(ranger in range_set){
-    outfile_filter <- (paste0(path_muf_set1m_sample_segm_rgb_idx, "ortho_muf_1m_rgb_idx_scaled_filter_r", 
+    outfile_filter <- (paste0(path_muf_set1m_sample_segm, "ortho_muf_rgb_idx_pca_scaled_filter_r", 
                               spatialr, "_rng", ranger, ".tif"))
     
-    outfile_spatial <- (paste0(path_muf_set1m_sample_segm_rgb_idx, "ortho_muf_1m_rgb_idx_scaled_spatial_r", 
+    outfile_spatial <- (paste0(path_muf_set1m_sample_segm, "ortho_muf_rgb_idx_pca_scaled_spatial_r", 
                                spatialr, "_rng", ranger, ".tif"))
     
     muf_msf <- otbcli_MeanShiftSmoothing(x = muf,
@@ -62,8 +62,8 @@ for(spatialr in spatialr_set){
 
 
 # Segmentation -----------------------------------------------------------------
-filter_files <- list.files(path_muf_set1m_sample_segm_rgb_idx, 
-                           pattern = glob2rx("ortho_muf_1m_rgb_idx_scaled_filter_r*.tif"),
+filter_files <- list.files(path_muf_set1m_sample_segm, 
+                           pattern = glob2rx("ortho_muf_rgb_idx_pca_scaled_filter_r*.tif"),
                            full.names = TRUE)
 spatial_files <- gsub("filter", "spatial", filter_files)
 
@@ -95,13 +95,13 @@ for(i in seq(length(filter_files))){
 
 
 # Aggregation of areas below minimum size --------------------------------------
-segm_files <- list.files(path_muf_set1m_sample_segm_rgb_idx, 
-                         pattern = glob2rx("ortho_muf_1m_rgb_idx_scaled*segm*.tif"),
+segm_files <- list.files(path_muf_set1m_sample_segm, 
+                         pattern = glob2rx("ortho_muf_rgb_idx_pca_scaled*segm*.tif"),
                          full.names = TRUE)
 filter_files <- paste0(dirname(segm_files), "/",
                        substr(basename(segm_files), 1, regexpr("_segm", basename(segm_files))-1), ".tif")
 
-minsize_set <- c(50)
+minsize_set <- seq(40, 70, 10)
 
 for(i in seq(length(segm_files))){
   for(minsize in minsize_set){
@@ -121,10 +121,10 @@ for(i in seq(length(segm_files))){
 
 
 # Conversion of segments to polygon shape file ---------------------------------
-segm_minsize_files <- list.files(path_muf_set1m_sample_segm_rgb_idx, 
-                                 pattern = glob2rx("ortho_muf_1m_rgb_idx_scaled*segm*_mins*.tif"),
+segm_minsize_files <- list.files(path_muf_set1m_sample_segm, 
+                                 pattern = glob2rx("ortho_muf_rgb_idx_pca_scaled*segm*_mins*.tif"),
                                  full.names = TRUE)
-muf <- paste0(path_muf_set1m_sample_segm_rgb_idx, "ortho_muf_1m_rgb_idx_scaled.tif")
+muf <- paste0(path_muf_set1m_sample_segm, "ortho_muf_rgb_idx_pca_scaled.tif")
 
 
 for(i in seq(length(segm_minsize_files))){

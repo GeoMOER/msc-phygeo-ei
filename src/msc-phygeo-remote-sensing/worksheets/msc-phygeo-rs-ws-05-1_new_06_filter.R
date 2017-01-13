@@ -11,17 +11,13 @@ if(Sys.info()["sysname"] == "Windows"){
 
 
 # Compute filters --------------------------------------------------------------
-# filenames <- c(list.files(path_muf_set1m, pattern = glob2rx("lidar*.tif"), 
-#                         full.names = TRUE),
-#                list.files(path_muf_set1m, pattern = glob2rx("*PC*.tif"), 
-#                           full.names = TRUE),
-#                list.files(path_muf_set1m, pattern = glob2rx("*I.tif"), 
-#                           full.names = TRUE))
-
-filenames <- c(list.files(path_muf_set1m, pattern = glob2rx("*rgb_idx*.tif"), 
+filenames <- c(list.files(path_muf_set1m_sample_non_segm, pattern = glob2rx("*rgb_idx*.tif"), 
                           full.names = TRUE), 
-               list.files(path_muf_set1m, pattern = glob2rx("*I.tif"), 
+               list.files(path_muf_set1m_sample_non_segm, pattern = glob2rx("*I.tif"), 
                           full.names = TRUE))
+
+filenames <- filenames[nchar(basename(filenames)) < 30]
+
 
 windows <- c(3, 9, 15, 21)
                         
