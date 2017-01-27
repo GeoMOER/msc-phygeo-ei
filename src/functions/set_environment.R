@@ -25,10 +25,12 @@ path_rdata <-paste0(path_data, "rdata/")
 
 path_muf_set1m <- paste0(path_data, "muf_set_1m/")
 path_muf_set1m_lcc <- paste0(path_muf_set1m, "lcc/")
-path_muf_set1m_lcc_ta <- paste0(path_muf_set1m_lcc, "/training_areas/")
+path_muf_set1m_lcc_ta <- paste0(path_muf_set1m_lcc, "training_areas/")
 path_muf_set1m_sample_non_segm <- paste0(path_muf_set1m, "sample_non_segm/")
 path_muf_set1m_sample_segm <- paste0(path_muf_set1m, "sample_segm/")
 path_muf_set1m_sample_segm_rgb_idx <- paste0(path_muf_set1m, "sample_segm_rgb_idx/")
+path_muf_set1m_sample_rses071 <- paste0(path_muf_set1m, "sample_rses071/")
+path_muf_set1m_sample_rses093 <- paste0(path_muf_set1m, "sample_rses093/")
 path_muf_set1m_sample_test_01 <- paste0(path_muf_set1m, "sample_test_01/")
 
 path_temp <- paste0(path_data, "temp/")
@@ -37,6 +39,7 @@ path_vectors <- paste0(path_data, "vectors/")
 
 
 # Libraries --------------------------------------------------------------------
+library(doParallel)
 library(glcm)
 library(gpm)
 library(mapview)

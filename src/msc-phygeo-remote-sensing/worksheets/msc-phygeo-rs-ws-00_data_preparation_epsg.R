@@ -18,3 +18,4 @@ for(name in aerial_files){
   projection(act) <- CRS("+init=epsg:25832")
   writeRaster(act, filename = paste0(path_muf_set1m, basename(name)))
 }
+

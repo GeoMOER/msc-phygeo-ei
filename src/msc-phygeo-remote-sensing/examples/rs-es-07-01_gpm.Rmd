@@ -9,136 +9,106 @@ the sp and raster package.
 As always, we start with importing the packages and setting the working
 directory.
 ```{r, eval=TRUE, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
-# Set path ---------------------------------------------------------------------
+# Set environment --------------------------------------------------------------
 if(Sys.info()["sysname"] == "Windows"){
-  filepath_base <- "D:/active/moc/msc-phygeo-remote-sensing-2016/"
+  source("D:/active/moc/msc-ui/scripts/msc-phygeo-ei/src/functions/set_environment.R")
 } else {
-  filepath_base <- "/media/permanent/active/moc/msc-phygeo-remote-sensing-2016/"
+  source("/media/permanent/active/moc/msc-ui/scripts/msc-phygeo-ei/src/functions/set_environment.R")
 }
-
-path_data <- paste0(filepath_base, "data/")
-path_aerial <- paste0(path_data, "aerial/")
-path_aerial_merged <- paste0(path_data, "aerial_merged/")
-path_aerial_croped <- paste0(path_data, "aerial_croped/")
-path_aerial_final <- paste0(path_data, "aerial_final/")
-path_aerial_aggregated <- paste0(path_data, "aerial_aggregated/")
-path_landcover_training_areas <- paste0(path_data, "landcover/training_areas/")
-path_rdata <- paste0(path_data, "RData/")
-path_scripts <- paste0(filepath_base, "scripts/msc-phygeo-remote-sensing/src/functions/")
-path_temp <- paste0(filepath_base, "temp/")
-
-funs <- list.files(path_scripts, pattern = glob2rx("fun*.R"), full.names = TRUE)
-sapply(funs, source, simplify = TRUE)
 ```
 
-
-```{r, warning=FALSE, message=FALSE, results="hide"}
-library(gpm)
-library(raster)
-library(rgdal)
-library(sp)
-
-rasterOptions(tmpdir = path_temp)
-```
-
-Before we can build a model, we have to extract the raster values (i.e. independent variables) from the satellite dataset. The extraction is based on the polygon layer (ta) which holds the training areas for the prediction. Once everything has been stored in a data frame, it's time to build the gpm object.
+Before we can build a model, we need a comprehensive dataset which has been compiled by extracting the values of the raster layers used for the land-cover prediction from inside the training areas. Since this has already been done during previous worksteps, the tabulated (data.frame) information which relates landcover and the pixel values of all the raster layers in each row is read from an rds object. Based on this dataset, a new datasest of class ``gpm`` is created later. The column "ID" which holds the ID of the land-cover classes is transformed to a factor since otherwise, the machine learning models would run in regression mode (i.e. predict numeric values including decimal values and not classes).
 ```{r, eval=FALSE, warning=FALSE, message=FALSE, results="hide"}
-rgb <- stack(paste0(path_aerial_aggregated, "geonode_muf_merged_001m.tif"))
-vi <- raster(paste0(path_aerial_aggregated, "muf_merged_001m_visible_vegetation_index.tif"))
-rm <- raster(paste0(path_aerial_aggregated, "geonode_muf_merged_001m_redness_index_mean_21.tif"))
-sat <- stack(rgb, vi, rm)
+obsv <- readRDS(file = paste0(path_muf_set1m_lcc_ta, "muf_lc_ta_poly_smpl_cmb_cc.rds"))
+obsv <- obsv[which(obsv$ID %in% names(table(obsv$ID)[table(obsv$ID) > 100])),]
 
-ta <- readOGR(paste0(path_landcover_training_areas, "muf_training_final.shp"),
-              "muf_training_final")
+obsv <- obsv[, c(which("ID" == colnames(obsv)),
+                             which("ortho_muf_1m.1" == colnames(obsv)),
+                             which("ortho_muf_NGRDI_glcm_mean_w3" == colnames(obsv)),
+                             which("ortho_muf_NGRDI_glcm_mean_w21" == colnames(obsv)))]
 
-data <- extract(sat, ta)
-summary(data)
-saveRDS(data, file = paste0(path_rdata, "muf_training_combined.RDS"))
-data <- readRDS(file = paste0(path_rdata, "muf_training_combined.RDS"))
+obsv <- obsv[complete.cases(obsv),]
+obsv <- obsv[!is.infinite(obsv$ortho_muf_NGRDI_glcm_mean_w3),]
+obsv <- obsv[!is.infinite(obsv$ortho_muf_NGRDI_glcm_mean_w21),]
 
-data_cmb <- lapply(seq(length(data)), function(i){
-  data.frame(ID = ta@data$ID[i],
-             NAME = ta@data$NAME[i],
-             data[[i]])
-})
-data_cmb <- do.call("rbind", data_cmb)
-data_cmb <- data_cmb[complete.cases(data_cmb[, c(1,3:7)]),]
+obsv$ID <- as.factor(obsv$ID)
 ```
 
-```{r, eval=FALSE, echo=FALSE, warning=FALSE, message=FALSE, results="hide"}
-saveRDS(data_cmb, file = paste0(path_rdata, "muf_training_combined_final.RDS"))
-```
-
-```{r, eval=FALSE, echo = FALSE}
-data_cmb <- readRDS(file = paste0(path_rdata, "muf_training_combined_final.RDS"))
-```
-
-In order to build the gpm object, some meta information has to be defined. This mainly hold information on which column number to use as response (i.e. dependent) variable and which ones to use as independent variables.
+In order to build the gpm object, some meta information has to be defined. This mainly holds information on which column number to use as response (i.e. dependent) variable and which ones to use as independent variables.
 ```{r, eval=FALSE}
-data_cmb$ID <- as.factor(data_cmb$ID)
-meta <- createGPMMeta(data_cmb, 
-                      type = "input",
-                      selector = 1, response = 1, 
-                      independent = c(3:7), meta = NULL)
-muf_gpm <- gpm(data_cmb, 
-               meta, scale = TRUE)
+col_selector <- which(names(obsv) == "ID")
+col_meta <- NULL
+col_lc <- which(names(obsv) == "ID")
+col_precitors <- seq(which(names(obsv) == "ortho_muf_1m.1"),
+                   which(names(obsv) == "ortho_muf_NGRDI_glcm_mean_w21"))
+    
+meta <- createGPMMeta(obsv, type = "input",
+                      selector = col_selector, 
+                      response = col_lc, 
+                      predictor = col_precitors, 
+                      meta = col_meta)
+
+obsv <- gpm(obsv, meta, scale = FALSE)
 ```
 
-Once the gpm object has been created, it can be used as input for computing
-resamples and splitting the resamples into test and training datasets afterwards. In the following example, only 50 data pairs per land-cover are extracted from the overall dataset and this reampling procedure is repeaded ten times. Afterwards, each of the resamplings is split into a training and testing dataset (each holding 50 percent of the data).
-```{r, eval=FALSE}
-muf_resamples <- resamplingsByVariable(x = muf_gpm@data$input, 
-                                       resample = 10, 
-                                       use_selector = TRUE,
-                                       selector = muf_gpm@data$input$ID,
-                                       grabs = 50)
+Once the gpm object has been created, it can be used for some more data preparation and model training as well as evaluation. 
 
-muf_trte <- splitMultResp(x = muf_gpm@data$input, 
-                           response = muf_gpm@meta$input$RESPONSE,
-                           resamples = muf_resamples,
-                           p = 0.50)
+Before we start with resampling/validation procedures, we can have a look at the correlation of the independent variables. Sometimes, the number of variables can considerably be decreased if highly correlated variables are excluded from the data (except for one of them for each highly correlated group). Since we use only three predictor variables in this example, we will skip this step but show only some commented code which illustrates a predictor variable reduction using a correlation threshold value of 0.80.
+```{r, eval=FALSE}
+# muf_gpm <- cleanPredictors(x = muf_gpm, nzv = TRUE, 
+#                            highcor = TRUE, cutoff = 0.80)
+```
+
+Prior to training the model, we create some resamples of the dataset and split them  into test and training datasets afterwards. In the following, only 50 data pairs per land-cover are extracted from the overall dataset and this reampling procedure is repeaded ten times. Afterwards, each of the resamplings is split into a training and testing dataset (each holding 65 percent of the data).
+
+```{r, eval=FALSE}
+obsv <- resamplingsByVariable(x = obsv,
+                              use_selector = FALSE,
+                              resample = 5, 
+                              grabs = 50)
+    
+# Split resamples into training and testing samples
+obsv <- splitMultResp(x = obsv, 
+                      p = 0.65, 
+                      use_selector = FALSE)
 ```
 
 Once the resampling has been defined, the model tuning and feature selection is
 handeld by the ``trainModel`` function.
 ```{r, eval=FALSE}
-muf_models <- trainModel(x = muf_gpm,
-                         response = muf_gpm@meta$input$RESPONSE, 
-                         independent = muf_gpm@meta$input$INDEPENDENT,
-                         resamples = muf_trte, 
-                         n_var = c(seq(length(muf_gpm@meta$input$INDEPENDENT))),
-                         mthd = "rf", 
-                         seed_nbr = 1, 
-                         cv_nbr = 5,
-                         var_selection = "indv",
-                         filepath_tmp = NULL)
-
+obsv <- trainModel(x = obsv,
+                   n_var = NULL, 
+                   mthd = "rf",
+                   mode = "rfe",
+                   seed_nbr = 11, 
+                   cv_nbr = 5,
+                   var_selection = "indv", 
+                   filepath_tmp = NULL)
 ```
 
 ```{r, eval = FALSE, echo = FALSE}
-saveRDS(muf_models, file = paste0(path_rdata, "muf_models.RDS"))
+saveRDS(obsv, file = paste0(path_muf_set1m_sample_rses071, "muf_models_rs-es-07-1.RDS"))
 ```
 
 ```{r, echo = FALSE}
-muf_models <- readRDS(file = paste0(path_rdata, "muf_models.RDS"))
+obsv <- readRDS(file = paste0(path_muf_set1m_sample_rses071, "muf_models_rs-es-07-1.RDS"))
 ```
 
 Based on the 10 trained models (10 because 10 resamplings have been created above), the variable importance of based on each model can be computed in a scaled (i.e. rainging between 0 and 1) and unscaled manner.
 ```{r}
-var_imp <- compVarImp(muf_models, scale = FALSE)
-var_imp_scale <- compVarImp(muf_models, scale = TRUE)
+var_imp <- compVarImp(obsv@model$rf_rfe, scale = FALSE)
+var_imp_scale <- compVarImp(obsv@model$rf_rfe, scale = TRUE)
 
 ```
 
 The statistics can further be used to create some variable importants plots. Please note that the heatmap only makes sense if more than one type of response variable has been selected (e.g. if one predicts different classes separately and not within one model).
 ```{r}
 plotVarImp(var_imp)
-
 plotVarImpHeatmap(var_imp_scale, xlab = "Species", ylab = "Band")
 ```
 
 Finally, the performance statistics can be computed for regression or - as in this example - classification models.
 ```{r}
-tstat <- compContTests(muf_models, mean = TRUE)
-summary(tstat[[2]])
+tstat <- compContTests(obsv@model$rf_rfe, mean = TRUE)
+tstat[[1]]["Kappa_mean"]
 ```
