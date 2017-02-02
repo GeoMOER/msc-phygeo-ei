@@ -12,6 +12,7 @@ if(Sys.info()["sysname"] == "Windows"){
 # Clip eastern aerial files to LAS extent and write raster to separate file ----
 aerial_files <- list.files(path_aerial_geomoc, full.names = TRUE, 
                            pattern = glob2rx("*.tif"))
+
 aoi <- readOGR(paste0(path_vectors, "muf_aoi.shp"), layer = "muf_aoi")
 
 for(name in aerial_files){
@@ -20,3 +21,4 @@ for(name in aerial_files){
   writeRaster(crp, filename = 
                 paste0(paste0(path_aerial_croped, basename(name))))
 }
+

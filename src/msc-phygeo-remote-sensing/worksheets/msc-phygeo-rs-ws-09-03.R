@@ -4,7 +4,7 @@
 
 # Set environment --------------------------------------------------------------
 if(Sys.info()["sysname"] == "Windows"){
-  source("F:/tnauss/set_environment.R")
+  source("D:/active/moc/msc-ui/scripts/msc-phygeo-ei/src/functions/set_environment.R")
 } else {
   source("/media/permanent/active/moc/msc-ui/scripts/msc-phygeo-ei/src/functions/set_environment.R")
 }
@@ -67,10 +67,13 @@ obsv <- trainModel(x = obsv,
                    var_selection = "indv", 
                    filepath_tmp = NULL)
 saveRDS(obsv, file = paste0(path_muf_set1m_sample_rses093, "gpm_muf_lc_ta_segm_rf_model.rds"))
+# obsv <- readRDS(file = paste0(path_muf_set1m_sample_rses093, "gpm_muf_lc_ta_segm_rf_model.rds"))
 
 obsv@model$rf_rfe[[1]][[1]]$model
 tstat <- compContTests(obsv@model$rf_rfe, mean = FALSE)
 
+vi <- compVarImp(obsv@model$rf_rfe)
+plotVarImp(vi)
 
 # Predict lcc ------------------------------------------------------------------
 library(randomForest)

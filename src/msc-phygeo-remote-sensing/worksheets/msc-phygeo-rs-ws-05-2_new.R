@@ -28,5 +28,3 @@ shp_final <- crop(shp_final, extent(muf))
 writeOGR(shp_final, paste0(path_muf_set1m_lcc_ta, "muf_training.shp"),
          "muf_training", overwrite = TRUE, driver = "ESRI Shapefile")
 
-
-t <- lapply()

@@ -12,11 +12,11 @@ if(Sys.info()["sysname"] == "Windows"){
 
 # Merge aerial files and write resulting raster to separate file ----------------
 aerial_files <- list.files(path_aerial_croped, full.names = TRUE, 
-                           pattern = glob2rx("*_01.tif"))
+                           pattern = glob2rx("*_1.tif"))
 
 for(name1 in aerial_files){
   # Merge file pairs
-  name2 <- paste0(substr(name1, 1, nchar(name1)-7), ".tif")
+  name2 <- paste0(substr(name1, 1, nchar(name1)-6), ".tif")
   fn <- overlay(stack(name1), stack(name2), fun = min)
   projection(fn) <- CRS("+init=epsg:25832")
   
