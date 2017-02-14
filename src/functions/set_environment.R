@@ -21,7 +21,7 @@ path_hydrology <- paste0(path_data, "hydrology/")
 path_lidar <- paste0(path_data, "lidar/")
 path_lidar_rasters <- paste0(path_lidar, "rasters/")
 
-path_rdata <-paste0(path_data, "rdata/") 
+path_rdata <-paste0(path_data, "rdata/")
 
 path_muf_set1m <- paste0(path_data, "muf_set_1m/")
 path_muf_set1m_lcc <- paste0(path_muf_set1m, "lcc/")
@@ -50,6 +50,7 @@ library(raster)
 library(rgdal)
 library(rgeos)
 library(satelliteTools)
+library(metTools)
 library(sp)
 
 
